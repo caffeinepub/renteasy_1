@@ -1,0 +1,114 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-add-frontend-ui-for-the-buy-rental-workflow-provide-a-buy-rental-action-for-a-selected-rental-collect-buyerphone-buyeremail-buyeraddress-create-exactly-one-order-via-backend-and-show-the-confirmation-message-exactly-request-sent-successfully",
+      "featureTitle": "Add frontend UI for the 'Buy Rental' workflow: provide a \"Buy Rental\" action for a selected rental, collect buyerPhone, buyerEmail, buyerAddress, create exactly one Order via backend, and show the confirmation message exactly: \"Request sent successfully\".",
+      "files": [
+        "frontend/src/components/BuyRentalDialog.tsx",
+        "frontend/src/components/SearchRentalResultCard.tsx",
+        "frontend/src/hooks/useCreateOrder.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-23"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-create-an-owner-messages-page-and-route-that-lists-orders-for-the-current-user-s-rentals-rental-createdby-current-user-displaying-rental-title-buyer-name-buyer-principal-string-is-acceptable-if-no-profile-exists-buyer-phone-buyer-email-buyer-address-status-include-an-accept-order-button-per-order-that-updates-the-existing-order-status-to-accepted-and-then-shows-order-accepted-successfully",
+      "featureTitle": "Create an Owner Messages page and route that lists Orders for the current user’s rentals (rental.createdBy == current user), displaying: Rental title, Buyer name (buyer principal string is acceptable if no profile exists), Buyer phone, Buyer email, Buyer address, Status; include an \"Accept Order\" button per order that updates the existing order status to \"Accepted\" and then shows: \"Order Accepted Successfully\".",
+      "files": [
+        "frontend/src/hooks/useAcceptOrder.ts",
+        "frontend/src/hooks/useOwnerOrders.ts",
+        "frontend/src/hooks/useUserProfile.ts",
+        "frontend/src/pages/OwnerMessagesPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-24"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-create-a-my-orders-page-and-route-buyer-side-that-lists-orders-where-buyer-current-user-and-displays-rental-image-rental-title-price-status-render-a-status-badge-that-is-orange-for-pending-label-pending-and-green-for-accepted-label-accepted",
+      "featureTitle": "Create a My Orders page and route (buyer side) that lists Orders where buyer == current user and displays: Rental image, Rental title, Price, Status; render a status badge that is orange for \"Pending\" (label \"Pending\") and green for \"Accepted\" (label \"Accepted\").",
+      "files": [
+        "frontend/src/components/OrderStatusBadge.tsx",
+        "frontend/src/hooks/useBuyerOrders.ts",
+        "frontend/src/pages/MyOrdersPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-25"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-application-routing-navigation-to-include-the-new-owner-messages-page-and-my-orders-page-without-breaking-existing-routes-home-add-rental-search-rental-and-keep-all-user-facing-labels-in-english",
+      "featureTitle": "Update application routing/navigation to include the new Owner Messages page and My Orders page without breaking existing routes (Home, Add Rental, Search Rental), and keep all user-facing labels in English.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/AppHeader.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-26"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-an-end-to-end-verification-path-manual-test-instructions-in-code-comments-or-readme-demonstrating-the-stable-flow-with-two-accounts-buyer-creates-one-order-pending-owner-accepts-accepted-buyer-refreshes-opens-my-orders-and-sees-status-accepted-confirm-no-duplicate-orders-are-created",
+      "featureTitle": "Add an end-to-end verification path (manual test instructions in code comments or README) demonstrating the stable flow with two accounts: Buyer creates one order (Pending) → Owner accepts (Accepted) → Buyer refreshes/opens My Orders and sees status Accepted; confirm no duplicate Orders are created.",
+      "files": [
+        "frontend/ORDER_FLOW_TEST.md",
+        "frontend/src/pages/OwnerMessagesPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-27"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

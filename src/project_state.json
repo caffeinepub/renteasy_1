@@ -1,0 +1,325 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 7,
+  "summary": "Expand RentEasy to include a stable Order acceptance flow: buyers can create an Order (status Pending) when buying a rental, owners can view incoming Orders for their rentals and accept them by updating the existing Order status to Accepted (no duplicate/new Order), and buyers can view updated statuses in My Orders; add appropriate Order privacy rules.",
+  "architectural_notes": [
+    "Use Bubble-native database/workflows only (no external APIs/custom backend) and keep logic simple/production-safe (no experimental/complex workflows).",
+    "Rental creation must always use 'Create a new thing' and never update/overwrite existing Rental records.",
+    "Find Items list must query all Rentals and sort by createdAt descending to support large datasets (pagination as needed).",
+    "Do not modify the Add Rental workflow or the database structure while adding search; implement search-only changes.",
+    "Search results must update dynamically; when search input is empty, show all Rentals; never restrict by current user.",
+    "Search filter logic: match Rentals where title OR category OR location contains the search input; sort by createdAt descending.",
+    "Order acceptance must update the existing Order record only (use 'Make changes to thing'); never create a new Order during acceptance; prevent duplicates.",
+    "Orders visibility must be filtered correctly: owner views Orders where rental's createdBy = current user; buyer views Orders where buyer = current user."
+  ],
+  "known_issues": [],
+  "isFixRequest": true,
+  "existing_features": [
+    {
+      "id": "feature-implement-user-authentication-using-internet-identity-support-sign-in-sign-out-gate-rental-creation-so-only-authenticated-users-can-add-rentals-allow-all-users-to-view-the-rental-listings-do-not-restrict-listings-to-the-creator",
+      "title": "Implement user authentication using Internet Identity: support sign-in/sign-out; gate rental creation so only authenticated users can add rentals; allow all users to view the rental listings (do not restrict listings to the creator).",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-the-add-rental-page-with-a-form-containing-product-title-category-description-multiline-price-location-phone-and-product-image-uploader-on-submit-create-a-new-rental-set-all-fields-from-inputs-set-createdby-to-current-user-set-createdat-to-current-date-time-show-a-success-message-then-redirect-to-the-find-items-page",
+      "title": "Build the “Add Rental” page with a form containing: Product Title, Category, Description (multiline), Price, Location, Phone, and Product Image uploader. On submit: create a new Rental, set all fields from inputs, set createdBy to current user, set createdAt to current date/time, show a success message, then redirect to the Find Items page.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-the-find-items-page-with-a-paginated-list-repeating-grid-equivalent-backed-by-searching-listing-all-rentals-sorted-by-createdat-descending-each-item-must-display-image-title-category-price-location-phone-do-not-filter-by-current-user-show-all-rentals",
+      "title": "Build the “Find Items” page with a paginated list (repeating-grid equivalent) backed by searching/listing all Rentals sorted by createdAt descending. Each item must display: Image, Title, Category, Price, Location, Phone. Do not filter by current user; show all rentals.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-make-the-app-mobile-responsive-for-add-rental-and-find-items-and-ensure-the-ui-handles-large-lists-gracefully-loading-states-empty-states-and-pagination",
+      "title": "Make the app mobile responsive for Add Rental and Find Items, and ensure the UI handles large lists gracefully (loading states, empty states, and pagination).",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-a-cohesive-production-ready-visual-theme-for-renteasy-colors-typography-spacing-component-styling-and-use-it-consistently-across-all-pages-without-introducing-extra-product-features",
+      "title": "Apply a cohesive, production-ready visual theme for RentEasy (colors, typography, spacing, component styling) and use it consistently across all pages without introducing extra product features.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-generated-renteasy-brand-logo-image-as-a-static-asset-under-frontend-public-assets-generated-and-display-it-in-the-app-header-navigation",
+      "title": "Add a generated RentEasy brand logo image as a static asset under frontend/public/assets/generated and display it in the app header/navigation.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-current-route-content-with-a-home-page-that-contains-only-two-buttons-1-add-rental-navigates-to-the-existing-add-rental-page-route-and-2-search-rental-navigates-to-a-new-search-rental-page-route-do-not-add-any-other-sections-or-content-on-the-home-page",
+      "title": "Replace the current '/' route content with a Home page that contains only two buttons: (1) “Add Rental” navigates to the existing Add Rental page route, and (2) “Search Rental” navigates to a new Search Rental page route. Do not add any other sections or content on the Home page.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-dedicated-search-rental-page-and-route-e-g-search-rental-that-shows-a-search-input-at-the-top-with-placeholder-text-exactly-search-by-title-category-or-location",
+      "title": "Add a dedicated Search Rental page and route (e.g., '/search-rental') that shows a search input at the top with placeholder text exactly: \"Search by title, category, or location\".",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-dynamic-search-behavior-on-the-search-rental-page-such-that-results-update-as-the-user-types-if-the-search-input-is-empty-show-all-rentals-do-not-restrict-results-by-the-current-user-rentals-created-by-all-users-must-be-searchable-and-visible",
+      "title": "Implement dynamic search behavior on the Search Rental page such that results update as the user types. If the search input is empty, show all rentals. Do not restrict results by the current user; rentals created by all users must be searchable and visible.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-the-search-rental-page-render-the-results-in-a-repeating-grid-repeating-group-equivalent-ui-where-each-result-cell-displays-only-rental-image-rental-title-rental-price-rental-location-and-rental-phone",
+      "title": "On the Search Rental page, render the results in a repeating-grid (repeating group equivalent) UI where each result cell displays only: rental image, rental title, rental price, rental location, and rental phone.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-application-routing-navigation-to-support-the-new-home-page-and-search-rental-page-without-breaking-existing-add-rental-behavior-ensure-user-facing-navigation-labels-use-english",
+      "title": "Update application routing/navigation to support the new Home page and Search Rental page without breaking existing Add Rental behavior. Ensure user-facing navigation labels use English.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-frontend-ui-for-the-buy-rental-workflow-provide-a-buy-rental-action-for-a-selected-rental-collect-buyerphone-buyeremail-buyeraddress-create-exactly-one-order-via-backend-and-show-the-confirmation-message-exactly-request-sent-successfully",
+      "title": "Add frontend UI for the 'Buy Rental' workflow: provide a \"Buy Rental\" action for a selected rental, collect buyerPhone, buyerEmail, buyerAddress, create exactly one Order via backend, and show the confirmation message exactly: \"Request sent successfully\".",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-an-owner-messages-page-and-route-that-lists-orders-for-the-current-user-s-rentals-rental-createdby-current-user-displaying-rental-title-buyer-name-buyer-principal-string-is-acceptable-if-no-profile-exists-buyer-phone-buyer-email-buyer-address-status-include-an-accept-order-button-per-order-that-updates-the-existing-order-status-to-accepted-and-then-shows-order-accepted-successfully",
+      "title": "Create an Owner Messages page and route that lists Orders for the current user’s rentals (rental.createdBy == current user), displaying: Rental title, Buyer name (buyer principal string is acceptable if no profile exists), Buyer phone, Buyer email, Buyer address, Status; include an \"Accept Order\" button per order that updates the existing order status to \"Accepted\" and then shows: \"Order Accepted Successfully\".",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-my-orders-page-and-route-buyer-side-that-lists-orders-where-buyer-current-user-and-displays-rental-image-rental-title-price-status-render-a-status-badge-that-is-orange-for-pending-label-pending-and-green-for-accepted-label-accepted",
+      "title": "Create a My Orders page and route (buyer side) that lists Orders where buyer == current user and displays: Rental image, Rental title, Price, Status; render a status badge that is orange for \"Pending\" (label \"Pending\") and green for \"Accepted\" (label \"Accepted\").",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-application-routing-navigation-to-include-the-new-owner-messages-page-and-my-orders-page-without-breaking-existing-routes-home-add-rental-search-rental-and-keep-all-user-facing-labels-in-english",
+      "title": "Update application routing/navigation to include the new Owner Messages page and My Orders page without breaking existing routes (Home, Add Rental, Search Rental), and keep all user-facing labels in English.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-an-end-to-end-verification-path-manual-test-instructions-in-code-comments-or-readme-demonstrating-the-stable-flow-with-two-accounts-buyer-creates-one-order-pending-owner-accepts-accepted-buyer-refreshes-opens-my-orders-and-sees-status-accepted-confirm-no-duplicate-orders-are-created",
+      "title": "Add an end-to-end verification path (manual test instructions in code comments or README) demonstrating the stable flow with two accounts: Buyer creates one order (Pending) → Owner accepts (Accepted) → Buyer refreshes/opens My Orders and sees status Accepted; confirm no duplicate Orders are created.",
+      "reqIds": [
+        "REQ-27"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Implement user signup/login; only logged-in users can add rentals; all logged-in users can view all rentals (not owner-restricted).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Create Bubble data type Rental with specified fields (title, category, description, price, location, phone, image, createdBy, createdAt) using clean native structure and no extra constraints/required fields beyond spec.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Create Add Rental page with form inputs and Bubble-native workflow to Create a new Rental, set fields, set createdBy/current user and createdAt/current date-time, show success message, then redirect to Find Items page.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Create Find Items page with a Rental repeating group searching all Rentals sorted by createdAt desc; display image, title, category, price, location, phone; no filtering by current user.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Configure privacy rules for Rental: view everyone; create logged-in users; edit/delete only createdBy.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Ensure behavior rules: always create new records (never overwrite), support unlimited users/products, use pagination if needed, and make pages mobile responsive.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Create the backend Rental data model and persistence in the single Motoko actor with the following fields: title (text, required), category (text, required), description (text, required), price (number, optional), location (text, required), phone (text, required), image (required), createdBy (User principal), createdAt (date/time, set automatically). Do not add unique constraints, slugs, or any additional required fields.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Implement backend APIs to (a) create a new Rental record and (b) list Rental records sorted by createdAt descending with pagination support. Ensure every submission creates a new record and never overwrites an existing record.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Enforce privacy/authorization rules: Rental records are readable by everyone; creation is allowed only for authenticated users; edit/delete is allowed only for the Rental’s createdBy. Implement the corresponding backend authorization checks and expose only authorized mutations.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Simplify Home page UI to only two buttons: Add Rental (go to Add Rental) and Search Rental (go to Search Rental); no extra sections.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Add/Search Rental page with search input (placeholder: \"Search by title, category, or location\") and a Rental repeating group that shows all rentals when empty and dynamically filters by title/category/location contains query, sorted by createdAt desc; display image, title, price, location, phone; do not filter by current user.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Update the data-fetching logic to support searching Rentals with the following constraints: title contains the search value OR category contains the search value OR location contains the search value; sort results by createdAt descending. This must not change the Rental database/schema structure.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Add/ensure an Order data type exists with fields: rental (Rental), buyer (User), buyerPhone (text), buyerEmail (text), buyerAddress (text), status (text), createdAt (date/time).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Implement 'Buy Rental' workflow: on click create exactly one new Order (rental=current page rental, buyer=current user, buyerPhone/email/address from inputs, status='Pending', createdAt=current date/time) and show confirmation message 'Request sent successfully'; do not create any other records.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-21",
+      "summary": "Create Owner Messages page: data source searches Orders where rental's createdBy = current user; display rental title and buyer details (name/phone/email/address) plus status; include 'Accept Order' button per order.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-22",
+      "summary": "Implement Accept Order workflow: when owner clicks 'Accept Order', use 'Make changes to thing' on the current cell's Order to set status='Accepted' (no new Order/duplicate) and show confirmation 'Order Accepted Successfully'.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-23",
+      "summary": "Create My Orders page (buyer side): data source searches Orders where buyer = current user; display rental image/title/price/status; show orange 'Pending' badge when status='Pending' and green 'Accepted' badge when status='Accepted'.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-24",
+      "summary": "Configure Order privacy rules: view allowed if buyer=current user OR rental's createdBy=current user; create allowed for logged-in users; edit/delete allowed only for rental's createdBy.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-25",
+      "summary": "Ensure the backend data model includes an Order record with exactly these fields: rental (Rental reference), buyer (User principal), buyerPhone (text), buyerEmail (text), buyerAddress (text), status (text), createdAt (date/time).",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-26",
+      "summary": "Implement backend persistence for Orders using a stable unique Order identifier that is not derived from rental title, and guarantee that creating an order always creates exactly one new record (no overwrite, no upsert, no accidental duplicate write for a single user action).",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-27",
+      "summary": "Add a backend API to create an Order (Buy Rental): set rental=selected rental, buyer=current caller, buyerPhone/email/address from inputs, status=\"Pending\", createdAt=now; allow only authenticated callers.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-28",
+      "summary": "Add a backend API for the Owner Messages page to list Orders constrained to rentals where rental.createdBy == current caller (owner). Returned data must include rental title and buyer details (buyer principal + phone/email/address) + status.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-29",
+      "summary": "Add a backend API for My Orders page to list Orders constrained to buyer == current caller (buyer). Returned data must include rental image/title/price and status.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-30",
+      "summary": "Implement backend 'Accept Order' as an update of the existing Order record only: when the rental owner calls accept on a specific Order ID, update only status to \"Accepted\" and do not create any new Order record.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-31",
+      "summary": "Enforce Order privacy/authorization rules in backend APIs: View allowed only if (buyer == caller) OR (rental.createdBy == caller); Create allowed only for authenticated users; Edit and Delete allowed only for rental.createdBy.",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "RentEasy",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

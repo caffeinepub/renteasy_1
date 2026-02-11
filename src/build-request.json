@@ -1,0 +1,255 @@
+{
+  "kind": "build_request",
+  "title": "Stable Order creation + owner acceptance without duplicates (Pending → Accepted)",
+  "priority": "high",
+  "requirements": [
+    {
+      "id": "REQ-16",
+      "text": "Ensure the backend data model includes an Order record with exactly these fields: rental (Rental reference), buyer (User principal), buyerPhone (text), buyerEmail (text), buyerAddress (text), status (text), createdAt (date/time).",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Data Type: Order\n\nFields:\n- rental (Rental)\n- buyer (User)\n- buyerPhone (text)\n- buyerEmail (text)\n- buyerAddress (text)\n- status (text)\n- createdAt (date)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Order is represented in Motoko with the specified fields and types (Rental reference + Principal for buyer + Text fields + createdAt timestamp).",
+        "Order status is stored as text with expected values \"Pending\" and \"Accepted\"."
+      ]
+    },
+    {
+      "id": "REQ-17",
+      "text": "Implement backend persistence for Orders using a stable unique Order identifier that is not derived from rental title, and guarantee that creating an order always creates exactly one new record (no overwrite, no upsert, no accidental duplicate write for a single user action).",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "No new order should be created.\n- No duplicate record.\n- Only update the existing order.",
+          "When Buyer clicks \"Buy Rental\":\n→ Create a new Order\n...\nDo NOT create any other record."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Each created order has a unique ID.",
+        "Calling create-order once results in exactly one new stored Order record.",
+        "No code path in accept-order creates an Order record."
+      ]
+    },
+    {
+      "id": "REQ-18",
+      "text": "Add a backend API to create an Order (Buy Rental): set rental=selected rental, buyer=current caller, buyerPhone/email/address from inputs, status=\"Pending\", createdAt=now; allow only authenticated callers.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "When Buyer clicks \"Buy Rental\":\n→ Create a new Order\nSet:\n- rental = Current Page Rental\n- buyer = Current User\n- buyerPhone = input phone\n- buyerEmail = input email\n- buyerAddress = input address\n- status = \"Pending\"\n- createdAt = Current date/time"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Unauthenticated caller is rejected with an authorization error.",
+        "Authenticated caller can create an order and receives the created Order (or its ID) from the backend.",
+        "New Order is persisted with status exactly \"Pending\" and createdAt set server-side."
+      ]
+    },
+    {
+      "id": "REQ-19",
+      "text": "Add a backend API for the Owner Messages page to list Orders constrained to rentals where rental.createdBy == current caller (owner). Returned data must include rental title and buyer details (buyer principal + phone/email/address) + status.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "OWNER MESSAGES PAGE\n\nData source:\nSearch for Orders\nConstraint:\nrental's createdBy = Current User\n\nDisplay:\n- Rental title\n- Buyer name\n- Buyer phone\n- Buyer email\n- Buyer address\n- Status"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Owner sees only orders for rentals they created.",
+        "Owner cannot fetch orders for rentals owned by other principals.",
+        "Each returned row includes the fields needed by the UI: rental title, buyer principal, buyerPhone, buyerEmail, buyerAddress, status."
+      ]
+    },
+    {
+      "id": "REQ-20",
+      "text": "Add a backend API for My Orders page to list Orders constrained to buyer == current caller (buyer). Returned data must include rental image/title/price and status.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "MY ORDERS PAGE (BUYER SIDE)\n\nData source:\nSearch for Orders\nConstraint:\nbuyer = Current User\n\nDisplay:\n- Rental image\n- Rental title\n- Price\n- Status"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Buyer sees only their own orders.",
+        "Returned orders include status and enough rental fields to render image, title, and price on the buyer UI."
+      ]
+    },
+    {
+      "id": "REQ-21",
+      "text": "Implement backend 'Accept Order' as an update of the existing Order record only: when the rental owner calls accept on a specific Order ID, update only status to \"Accepted\" and do not create any new Order record.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "When Owner clicks \"Accept Order\":\n\n→ Make changes to thing (Current cell's Order)\nSet:\n- status = \"Accepted\"\n\nDo NOT create new Order.\nDo NOT duplicate record.\nOnly modify status field."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Accepting an order changes the status of that exact stored Order to \"Accepted\".",
+        "The Order ID remains the same before and after acceptance.",
+        "The total number of Orders in storage does not increase when accepting an order.",
+        "Only the rental owner (rental.createdBy) can accept/update the order; others receive an authorization error."
+      ]
+    },
+    {
+      "id": "REQ-22",
+      "text": "Enforce Order privacy/authorization rules in backend APIs: View allowed only if (buyer == caller) OR (rental.createdBy == caller); Create allowed only for authenticated users; Edit and Delete allowed only for rental.createdBy.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "PRIVACY RULES\n\nOrder:\nView:\n- buyer = Current User\nOR\n- rental's createdBy = Current User\n\nCreate:\n- Logged in users only\n\nEdit:\n- Only rental's createdBy\n\nDelete:\n- Only rental's createdBy"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Buyer can view their orders but cannot view other buyers’ orders unless they are the rental owner.",
+        "Owner can view orders for their rentals but cannot view unrelated orders.",
+        "Only authenticated callers can create orders.",
+        "Only rental owner can accept/update or delete an order."
+      ]
+    },
+    {
+      "id": "REQ-23",
+      "text": "Add frontend UI for the 'Buy Rental' workflow: provide a \"Buy Rental\" action for a selected rental, collect buyerPhone, buyerEmail, buyerAddress, create exactly one Order via backend, and show the confirmation message exactly: \"Request sent successfully\".",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "When Buyer clicks \"Buy Rental\":\n→ Create a new Order\n...\nShow message:\n\"Request sent successfully\"\n\nDo NOT create any other record."
+        ]
+      },
+      "acceptanceCriteria": [
+        "There is a visible \"Buy Rental\" action associated with a specific rental.",
+        "Buyer can enter phone/email/address and submit.",
+        "Submitting triggers exactly one create-order request.",
+        "On success, UI shows \"Request sent successfully\".",
+        "Unauthenticated users are prevented from creating an order and see an English error message."
+      ]
+    },
+    {
+      "id": "REQ-24",
+      "text": "Create an Owner Messages page and route that lists Orders for the current user’s rentals (rental.createdBy == current user), displaying: Rental title, Buyer name (buyer principal string is acceptable if no profile exists), Buyer phone, Buyer email, Buyer address, Status; include an \"Accept Order\" button per order that updates the existing order status to \"Accepted\" and then shows: \"Order Accepted Successfully\".",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "OWNER MESSAGES PAGE\n...\nAdd button:\n\"Accept Order\"\n...\nShow confirmation:\n\"Order Accepted Successfully\""
+        ]
+      },
+      "acceptanceCriteria": [
+        "Owner Messages page shows only orders for rentals owned by the logged-in user.",
+        "Each order row renders all specified fields (rental title + buyer details + status).",
+        "Clicking \"Accept Order\" updates the existing order (no new order created) and updates the status shown in the list.",
+        "After success, UI shows \"Order Accepted Successfully\"."
+      ]
+    },
+    {
+      "id": "REQ-25",
+      "text": "Create a My Orders page and route (buyer side) that lists Orders where buyer == current user and displays: Rental image, Rental title, Price, Status; render a status badge that is orange for \"Pending\" (label \"Pending\") and green for \"Accepted\" (label \"Accepted\").",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "MY ORDERS PAGE (BUYER SIDE)\n...\nIf status = \"Pending\"\nShow orange badge: Pending\n\nIf status = \"Accepted\"\nShow green badge: Accepted"
+        ]
+      },
+      "acceptanceCriteria": [
+        "My Orders page shows only orders created by the logged-in user.",
+        "Each order shows rental image, title, price, and status.",
+        "Pending orders show an orange \"Pending\" badge.",
+        "Accepted orders show a green \"Accepted\" badge."
+      ]
+    },
+    {
+      "id": "REQ-26",
+      "text": "Update application routing/navigation to include the new Owner Messages page and My Orders page without breaking existing routes (Home, Add Rental, Search Rental), and keep all user-facing labels in English.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Use English for any user-facing text in the build request."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Routes for Owner Messages and My Orders are reachable in the app.",
+        "Existing routes (/, /add-rental, /search-rental) continue working.",
+        "Navigation labels for new pages are in English."
+      ]
+    },
+    {
+      "id": "REQ-27",
+      "text": "Add an end-to-end verification path (manual test instructions in code comments or README) demonstrating the stable flow with two accounts: Buyer creates one order (Pending) → Owner accepts (Accepted) → Buyer refreshes/opens My Orders and sees status Accepted; confirm no duplicate Orders are created.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Test with two accounts:\nOne as Buyer\nOne as Owner\n...\nNo duplicate.\nNo overwrite.\nNo error.\nUnlimited users.\nUnlimited orders."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Documented steps exist to test with two identities (buyer/owner).",
+        "Following the steps results in exactly one order record whose status transitions Pending → Accepted.",
+        "Buyer sees Accepted status in My Orders after owner acceptance."
+      ]
+    }
+  ],
+  "constraints": [
+    "Backend must remain a single-actor Motoko architecture; keep all Motoko logic in backend/main.mo.",
+    "Do not create any workflow that creates a second Order during acceptance; acceptance must only update the existing Order status.",
+    "Do not edit files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or anything under frontend/src/components/ui; compose around them instead.",
+    "Use English for all user-facing UI text and confirmation messages.",
+    "Do not introduce external databases, third-party auth providers, or additional backend services."
+  ],
+  "nonGoals": [
+    "Do not add additional order statuses beyond \"Pending\" and \"Accepted\".",
+    "Do not add payments, checkout, shipping calculation, notifications, chat, or messaging features.",
+    "Do not add extra workflows beyond: create order once on Buy Rental, list orders for owner/buyer, update status on Accept Order.",
+    "Do not change the existing rental search behavior or the Home page’s two-button-only content."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
+  }
+}
