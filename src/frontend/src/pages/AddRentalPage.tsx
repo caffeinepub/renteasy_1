@@ -38,6 +38,12 @@ export default function AddRentalPage() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Only allow digits
+    const value = e.target.value.replace(/\D/g, '');
+    setFormData({ ...formData, price: value });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -50,7 +56,7 @@ export default function AddRentalPage() {
       return;
     }
 
-    const price = formData.price.trim() ? BigInt(Math.floor(parseFloat(formData.price))) : null;
+    const price = formData.price.trim() ? BigInt(formData.price) : null;
 
     createRental(
       {
@@ -81,7 +87,7 @@ export default function AddRentalPage() {
           <p className="text-muted-foreground mb-6">Please log in to add a rental listing</p>
           <button
             onClick={() => navigate({ to: '/' })}
-            className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            className="px-6 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors shadow-md"
           >
             Go to Home
           </button>
@@ -122,7 +128,7 @@ export default function AddRentalPage() {
               type="text"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className={`w-full px-4 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring ${
+              className={`w-full px-4 py-2 border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-ring shadow-sm ${
                 errors.title ? 'border-destructive' : ''
               }`}
               placeholder="e.g., Mountain Bike"
@@ -140,7 +146,7 @@ export default function AddRentalPage() {
               type="text"
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className={`w-full px-4 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring ${
+              className={`w-full px-4 py-2 border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-ring shadow-sm ${
                 errors.category ? 'border-destructive' : ''
               }`}
               placeholder="e.g., Sports Equipment"
@@ -158,7 +164,7 @@ export default function AddRentalPage() {
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={4}
-              className={`w-full px-4 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring resize-none ${
+              className={`w-full px-4 py-2 border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-ring resize-none shadow-sm ${
                 errors.description ? 'border-destructive' : ''
               }`}
               placeholder="Describe your item in detail..."
@@ -169,19 +175,18 @@ export default function AddRentalPage() {
           {/* Price */}
           <div>
             <label htmlFor="price" className="block text-sm font-medium mb-2">
-              Price per Day (optional)
+              Price per month (optional)
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
               <input
                 id="price"
-                type="number"
-                min="0"
-                step="0.01"
+                type="text"
+                inputMode="numeric"
                 value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                className="w-full pl-8 pr-4 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                placeholder="0.00"
+                onChange={handlePriceChange}
+                className="w-full pl-8 pr-4 py-2 border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-ring shadow-sm"
+                placeholder="0"
               />
             </div>
           </div>
@@ -196,7 +201,7 @@ export default function AddRentalPage() {
               type="text"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              className={`w-full px-4 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring ${
+              className={`w-full px-4 py-2 border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-ring shadow-sm ${
                 errors.location ? 'border-destructive' : ''
               }`}
               placeholder="e.g., San Francisco, CA"
@@ -214,7 +219,7 @@ export default function AddRentalPage() {
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className={`w-full px-4 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring ${
+              className={`w-full px-4 py-2 border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-ring shadow-sm ${
                 errors.phone ? 'border-destructive' : ''
               }`}
               placeholder="e.g., (555) 123-4567"
@@ -235,7 +240,7 @@ export default function AddRentalPage() {
             <button
               type="submit"
               disabled={isPending}
-              className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium inline-flex items-center justify-center gap-2"
+              className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium inline-flex items-center justify-center gap-2 shadow-md"
             >
               {isPending && <Loader2 className="w-5 h-5 animate-spin" />}
               {isPending ? 'Adding Rental...' : 'Add Rental'}

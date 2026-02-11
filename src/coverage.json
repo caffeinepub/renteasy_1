@@ -1,137 +1,58 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T12:36:23.501Z",
+  "generatedAt": "2026-02-11T15:32:40.411Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 12,
-    "implemented": 5,
+    "total": 4,
+    "implemented": 3,
     "items": [
       {
-        "id": "REQ-16",
-        "summary": "Ensure the backend data model includes an Order record with exactly these fields: rental (Rental reference), buyer (User principal), buyerPhone (text), buyerEmail (text), buyerAddress (text), status (text), createdAt (date/time).",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-17",
-        "summary": "Implement backend persistence for Orders using a stable unique Order identifier that is not derived from rental title, and guarantee that creating an order always creates exactly one new record (no overwrite, no upsert, no accidental duplicate write for a single user action).",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-18",
-        "summary": "Add a backend API to create an Order (Buy Rental): set rental=selected rental, buyer=current caller, buyerPhone/email/address from inputs, status=\"Pending\", createdAt=now; allow only authenticated callers.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-19",
-        "summary": "Add a backend API for the Owner Messages page to list Orders constrained to rentals where rental.createdBy == current caller (owner). Returned data must include rental title and buyer details (buyer principal + phone/email/address) + status.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-20",
-        "summary": "Add a backend API for My Orders page to list Orders constrained to buyer == current caller (buyer). Returned data must include rental image/title/price and status.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-21",
-        "summary": "Implement backend 'Accept Order' as an update of the existing Order record only: when the rental owner calls accept on a specific Order ID, update only status to \"Accepted\" and do not create any new Order record.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-22",
-        "summary": "Enforce Order privacy/authorization rules in backend APIs: View allowed only if (buyer == caller) OR (rental.createdBy == caller); Create allowed only for authenticated users; Edit and Delete allowed only for rental.createdBy.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-23",
-        "summary": "Add frontend UI for the 'Buy Rental' workflow: provide a \"Buy Rental\" action for a selected rental, collect buyerPhone, buyerEmail, buyerAddress, create exactly one Order via backend, and show the confirmation message exactly: \"Request sent successfully\".",
+        "id": "REQ-32",
+        "summary": "Add a per-rental \"Delete\" button to each rental cell on the Search Rental page results grid (the SearchRentalResultCard component). The button label must be exactly: \"Delete\".",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/BuyRentalDialog.tsx",
-          "frontend/src/hooks/useCreateOrder.ts",
-          "frontend/src/components/SearchRentalResultCard.tsx",
-          "frontend/src/pages/SearchRentalPage.tsx"
+          "frontend/src/components/SearchRentalResultCard.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/BuyRentalDialog.tsx",
-          "frontend/src/hooks/useCreateOrder.ts",
           "frontend/src/components/SearchRentalResultCard.tsx"
         ]
       },
       {
-        "id": "REQ-24",
-        "summary": "Create an Owner Messages page and route that lists Orders for the current user’s rentals (rental.createdBy == current user), displaying: Rental title, Buyer name (buyer principal string is acceptable if no profile exists), Buyer phone, Buyer email, Buyer address, Status; include an \"Accept Order\" button per order that updates the existing order status to \"Accepted\" and then shows: \"Order Accepted Successfully\".",
+        "id": "REQ-33",
+        "summary": "Show the \"Delete\" button ONLY when the current rental’s createdBy matches the currently authenticated user principal; otherwise hide the button entirely (non-owners must not see any delete affordance).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/OwnerMessagesPage.tsx",
-          "frontend/src/hooks/useOwnerOrders.ts",
-          "frontend/src/hooks/useAcceptOrder.ts",
-          "frontend/src/hooks/useUserProfile.ts"
+          "frontend/src/components/SearchRentalResultCard.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/OwnerMessagesPage.tsx",
-          "frontend/src/hooks/useOwnerOrders.ts",
-          "frontend/src/hooks/useAcceptOrder.ts",
-          "frontend/src/hooks/useUserProfile.ts"
+          "frontend/src/components/SearchRentalResultCard.tsx"
         ]
       },
       {
-        "id": "REQ-25",
-        "summary": "Create a My Orders page and route (buyer side) that lists Orders where buyer == current user and displays: Rental image, Rental title, Price, Status; render a status badge that is orange for \"Pending\" (label \"Pending\") and green for \"Accepted\" (label \"Accepted\").",
+        "id": "REQ-34",
+        "summary": "Implement the delete workflow on Search Rental results: when the owner clicks \"Delete\", show a confirmation popup with the exact message: \"Are you sure you want to delete this product?\". Only if the user confirms, call the backend to delete the current rental. After successful deletion, the rental must disappear from the list immediately (by updating local/UI state and/or invalidating relevant React Query caches).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/MyOrdersPage.tsx",
-          "frontend/src/hooks/useBuyerOrders.ts",
-          "frontend/src/components/OrderStatusBadge.tsx"
+          "frontend/src/hooks/useDeleteRental.ts",
+          "frontend/src/components/SearchRentalResultCard.tsx",
+          "frontend/src/pages/SearchRentalPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/MyOrdersPage.tsx",
-          "frontend/src/hooks/useBuyerOrders.ts",
-          "frontend/src/components/OrderStatusBadge.tsx"
+          "frontend/src/hooks/useDeleteRental.ts",
+          "frontend/src/components/SearchRentalResultCard.tsx",
+          "frontend/src/pages/SearchRentalPage.tsx"
         ]
       },
       {
-        "id": "REQ-26",
-        "summary": "Update application routing/navigation to include the new Owner Messages page and My Orders page without breaking existing routes (Home, Add Rental, Search Rental), and keep all user-facing labels in English.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/src/components/AppHeader.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/src/components/AppHeader.tsx"
-        ]
-      },
-      {
-        "id": "REQ-27",
-        "summary": "Add an end-to-end verification path (manual test instructions in code comments or README) demonstrating the stable flow with two accounts: Buyer creates one order (Pending) → Owner accepts (Accepted) → Buyer refreshes/opens My Orders and sees status Accepted; confirm no duplicate Orders are created.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/ORDER_FLOW_TEST.md",
-          "frontend/src/pages/OwnerMessagesPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/ORDER_FLOW_TEST.md",
-          "frontend/src/pages/OwnerMessagesPage.tsx"
-        ]
+        "id": "REQ-35",
+        "summary": "Enforce backend authorization for rental deletion so that only the rental owner (rental.createdBy == caller) can delete a rental; all other callers must be rejected. Ensure rental deletion does not automatically delete any Orders.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       }
     ]
   },
@@ -141,23 +62,9 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/ORDER_FLOW_TEST.md",
-    "frontend/src/App.tsx",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/AppHeader.tsx",
-    "frontend/src/components/BuyRentalDialog.tsx",
-    "frontend/src/components/OrderStatusBadge.tsx",
     "frontend/src/components/SearchRentalResultCard.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useAcceptOrder.ts",
-    "frontend/src/hooks/useBuyerOrders.ts",
-    "frontend/src/hooks/useCreateOrder.ts",
-    "frontend/src/hooks/useOwnerOrders.ts",
-    "frontend/src/hooks/useUserProfile.ts",
-    "frontend/src/pages/MyOrdersPage.tsx",
-    "frontend/src/pages/OwnerMessagesPage.tsx",
+    "frontend/src/hooks/useDeleteRental.ts",
+    "frontend/src/pages/SearchRentalPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

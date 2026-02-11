@@ -3,6 +3,7 @@ import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { OrderStatusBadge } from '../components/OrderStatusBadge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, ShoppingBag } from 'lucide-react';
+import { formatMonthlyPrice } from '../utils/formatPrice';
 
 export default function MyOrdersPage() {
   const { identity } = useInternetIdentity();
@@ -57,36 +58,39 @@ export default function MyOrdersPage() {
 
         {!isLoading && !error && orders.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {orders.map((order) => (
-              <Card key={order.orderId.toString()} className="overflow-hidden">
-                <div className="aspect-[4/3] overflow-hidden bg-muted">
-                  <img
-                    src={order.rentalImage}
-                    alt={order.rentalTitle}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <CardContent className="p-4 space-y-3">
-                  <div>
-                    <h3 className="font-semibold text-lg line-clamp-1">{order.rentalTitle}</h3>
+            {orders.map((order) => {
+              const formattedPrice = formatMonthlyPrice(order.rentalPrice);
+              
+              return (
+                <Card key={order.orderId.toString()} className="overflow-hidden rounded-xl shadow-md">
+                  <div className="aspect-[4/3] overflow-hidden bg-muted">
+                    <img
+                      src={order.rentalImage}
+                      alt={order.rentalTitle}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-
-                  {order.rentalPrice !== null && (
-                    <div className="text-xl font-bold text-primary">
-                      ${Number(order.rentalPrice).toLocaleString()}
-                      <span className="text-sm font-normal text-muted-foreground">/day</span>
+                  <CardContent className="p-4 space-y-3">
+                    <div>
+                      <h3 className="font-semibold text-lg line-clamp-1">{order.rentalTitle}</h3>
                     </div>
-                  )}
 
-                  <div className="pt-3 border-t">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Status:</span>
-                      <OrderStatusBadge status={order.status} />
+                    {formattedPrice && (
+                      <div className="text-lg font-bold text-primary">
+                        {formattedPrice}
+                      </div>
+                    )}
+
+                    <div className="pt-3 border-t">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Status:</span>
+                        <OrderStatusBadge status={order.status} />
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>

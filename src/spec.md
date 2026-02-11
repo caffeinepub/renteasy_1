@@ -1,22 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Make Order creation and owner acceptance stable and non-duplicative, supporting the Pending → Accepted flow with correct authorization and new buyer/owner order-list pages.
+**Goal:** Allow rental owners to delete their own rentals directly from the Search Rental results, with confirmation and immediate UI removal.
 
 **Planned changes:**
-- Add/ensure an `Order` backend data model with fields: rental reference, buyer principal, buyerPhone, buyerEmail, buyerAddress, status ("Pending"/"Accepted"), createdAt timestamp.
-- Implement stable Order persistence with a unique Order ID (not derived from rental title) so a single create-order call produces exactly one stored Order record (no overwrite/upsert/duplicate write).
-- Add backend APIs to:
-  - Create an Order (authenticated callers only) with status="Pending" and createdAt set server-side.
-  - List Orders for owners (only orders for rentals where rental.createdBy == caller), including rental title + buyer details + status.
-  - List Orders for buyers (only orders where buyer == caller), including rental image/title/price + status.
-  - Accept an Order by Order ID (owner-only) that updates only status to "Accepted" without creating any new Order record.
-- Enforce Order authorization rules across APIs: view only by buyer or rental owner; create only for authenticated users; update/delete only for rental owner.
-- Add frontend UI:
-  - “Buy Rental” workflow (collect phone/email/address; submit exactly one create-order call; show “Request sent successfully”; show English auth error when not logged in).
-  - Owner Messages page (list relevant orders; “Accept Order” updates status to Accepted; show “Order Accepted Successfully”).
-  - My Orders page (list buyer’s orders with rental image/title/price; show orange “Pending” badge and green “Accepted” badge).
-- Update routing/navigation to include Owner Messages and My Orders without breaking existing routes, keeping all user-facing labels in English.
-- Add documented manual end-to-end verification steps for two identities (buyer creates one Pending order → owner accepts → buyer sees Accepted; confirm no duplicates).
+- Add a per-rental "Delete" button to each SearchRentalResultCard in the /search-rental results grid.
+- Show the "Delete" button only when the current rental’s createdBy matches the authenticated user; otherwise hide it entirely (including when logged out).
+- On clicking "Delete", show a confirmation popup with the exact message: "Are you sure you want to delete this product?" and only proceed on confirm.
+- Call the backend rental deletion API on confirm; after successful deletion, remove the rental from the results immediately by updating UI state and/or invalidating relevant caches.
+- Enforce backend authorization so only the rental owner can delete; ensure deleting a rental does not automatically delete or modify any Orders.
 
-**User-visible outcome:** Buyers can request a rental purchase once and see it in “My Orders” as Pending/Accepted, while owners can view incoming requests on “Owner Messages” and accept them—updating the existing order without creating duplicates.
+**User-visible outcome:** On the Search Rental page, owners see a "Delete" button on their own rental cards; confirming the prompt permanently deletes the rental and it disappears from the list immediately, while non-owners never see a delete option.

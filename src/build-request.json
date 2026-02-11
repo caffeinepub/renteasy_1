@@ -1,242 +1,96 @@
 {
   "kind": "build_request",
-  "title": "Stable Order creation + owner acceptance without duplicates (Pending → Accepted)",
-  "priority": "high",
+  "title": "Owner-only Rental Delete on Search Rental page",
+  "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-16",
-      "text": "Ensure the backend data model includes an Order record with exactly these fields: rental (Rental reference), buyer (User principal), buyerPhone (text), buyerEmail (text), buyerAddress (text), status (text), createdAt (date/time).",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "Data Type: Order\n\nFields:\n- rental (Rental)\n- buyer (User)\n- buyerPhone (text)\n- buyerEmail (text)\n- buyerAddress (text)\n- status (text)\n- createdAt (date)"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Order is represented in Motoko with the specified fields and types (Rental reference + Principal for buyer + Text fields + createdAt timestamp).",
-        "Order status is stored as text with expected values \"Pending\" and \"Accepted\"."
-      ]
-    },
-    {
-      "id": "REQ-17",
-      "text": "Implement backend persistence for Orders using a stable unique Order identifier that is not derived from rental title, and guarantee that creating an order always creates exactly one new record (no overwrite, no upsert, no accidental duplicate write for a single user action).",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "No new order should be created.\n- No duplicate record.\n- Only update the existing order.",
-          "When Buyer clicks \"Buy Rental\":\n→ Create a new Order\n...\nDo NOT create any other record."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Each created order has a unique ID.",
-        "Calling create-order once results in exactly one new stored Order record.",
-        "No code path in accept-order creates an Order record."
-      ]
-    },
-    {
-      "id": "REQ-18",
-      "text": "Add a backend API to create an Order (Buy Rental): set rental=selected rental, buyer=current caller, buyerPhone/email/address from inputs, status=\"Pending\", createdAt=now; allow only authenticated callers.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "When Buyer clicks \"Buy Rental\":\n→ Create a new Order\nSet:\n- rental = Current Page Rental\n- buyer = Current User\n- buyerPhone = input phone\n- buyerEmail = input email\n- buyerAddress = input address\n- status = \"Pending\"\n- createdAt = Current date/time"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Unauthenticated caller is rejected with an authorization error.",
-        "Authenticated caller can create an order and receives the created Order (or its ID) from the backend.",
-        "New Order is persisted with status exactly \"Pending\" and createdAt set server-side."
-      ]
-    },
-    {
-      "id": "REQ-19",
-      "text": "Add a backend API for the Owner Messages page to list Orders constrained to rentals where rental.createdBy == current caller (owner). Returned data must include rental title and buyer details (buyer principal + phone/email/address) + status.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "OWNER MESSAGES PAGE\n\nData source:\nSearch for Orders\nConstraint:\nrental's createdBy = Current User\n\nDisplay:\n- Rental title\n- Buyer name\n- Buyer phone\n- Buyer email\n- Buyer address\n- Status"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Owner sees only orders for rentals they created.",
-        "Owner cannot fetch orders for rentals owned by other principals.",
-        "Each returned row includes the fields needed by the UI: rental title, buyer principal, buyerPhone, buyerEmail, buyerAddress, status."
-      ]
-    },
-    {
-      "id": "REQ-20",
-      "text": "Add a backend API for My Orders page to list Orders constrained to buyer == current caller (buyer). Returned data must include rental image/title/price and status.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "MY ORDERS PAGE (BUYER SIDE)\n\nData source:\nSearch for Orders\nConstraint:\nbuyer = Current User\n\nDisplay:\n- Rental image\n- Rental title\n- Price\n- Status"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Buyer sees only their own orders.",
-        "Returned orders include status and enough rental fields to render image, title, and price on the buyer UI."
-      ]
-    },
-    {
-      "id": "REQ-21",
-      "text": "Implement backend 'Accept Order' as an update of the existing Order record only: when the rental owner calls accept on a specific Order ID, update only status to \"Accepted\" and do not create any new Order record.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "When Owner clicks \"Accept Order\":\n\n→ Make changes to thing (Current cell's Order)\nSet:\n- status = \"Accepted\"\n\nDo NOT create new Order.\nDo NOT duplicate record.\nOnly modify status field."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Accepting an order changes the status of that exact stored Order to \"Accepted\".",
-        "The Order ID remains the same before and after acceptance.",
-        "The total number of Orders in storage does not increase when accepting an order.",
-        "Only the rental owner (rental.createdBy) can accept/update the order; others receive an authorization error."
-      ]
-    },
-    {
-      "id": "REQ-22",
-      "text": "Enforce Order privacy/authorization rules in backend APIs: View allowed only if (buyer == caller) OR (rental.createdBy == caller); Create allowed only for authenticated users; Edit and Delete allowed only for rental.createdBy.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "PRIVACY RULES\n\nOrder:\nView:\n- buyer = Current User\nOR\n- rental's createdBy = Current User\n\nCreate:\n- Logged in users only\n\nEdit:\n- Only rental's createdBy\n\nDelete:\n- Only rental's createdBy"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Buyer can view their orders but cannot view other buyers’ orders unless they are the rental owner.",
-        "Owner can view orders for their rentals but cannot view unrelated orders.",
-        "Only authenticated callers can create orders.",
-        "Only rental owner can accept/update or delete an order."
-      ]
-    },
-    {
-      "id": "REQ-23",
-      "text": "Add frontend UI for the 'Buy Rental' workflow: provide a \"Buy Rental\" action for a selected rental, collect buyerPhone, buyerEmail, buyerAddress, create exactly one Order via backend, and show the confirmation message exactly: \"Request sent successfully\".",
+      "id": "REQ-32",
+      "text": "Add a per-rental \"Delete\" button to each rental cell on the Search Rental page results grid (the SearchRentalResultCard component). The button label must be exactly: \"Delete\".",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-3"
         ],
         "quotes": [
-          "When Buyer clicks \"Buy Rental\":\n→ Create a new Order\n...\nShow message:\n\"Request sent successfully\"\n\nDo NOT create any other record."
+          "Inside Repeating Group (Type: Rental): Add a Delete button inside each rental cell.\n\nLabel:\n\"Delete\""
         ]
       },
       "acceptanceCriteria": [
-        "There is a visible \"Buy Rental\" action associated with a specific rental.",
-        "Buyer can enter phone/email/address and submit.",
-        "Submitting triggers exactly one create-order request.",
-        "On success, UI shows \"Request sent successfully\".",
-        "Unauthenticated users are prevented from creating an order and see an English error message."
+        "On /search-rental, every rental card includes a \"Delete\" button element in the card layout (even if conditionally hidden).",
+        "The button’s visible label text is exactly \"Delete\"."
       ]
     },
     {
-      "id": "REQ-24",
-      "text": "Create an Owner Messages page and route that lists Orders for the current user’s rentals (rental.createdBy == current user), displaying: Rental title, Buyer name (buyer principal string is acceptable if no profile exists), Buyer phone, Buyer email, Buyer address, Status; include an \"Accept Order\" button per order that updates the existing order status to \"Accepted\" and then shows: \"Order Accepted Successfully\".",
+      "id": "REQ-33",
+      "text": "Show the \"Delete\" button ONLY when the current rental’s createdBy matches the currently authenticated user principal; otherwise hide the button entirely (non-owners must not see any delete affordance).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-3"
         ],
         "quotes": [
-          "OWNER MESSAGES PAGE\n...\nAdd button:\n\"Accept Order\"\n...\nShow confirmation:\n\"Order Accepted Successfully\""
+          "Delete button must be visible ONLY when:\n\nCurrent cell's Rental's createdBy = Current User\n\nOtherwise:\n→ Hide delete button"
         ]
       },
       "acceptanceCriteria": [
-        "Owner Messages page shows only orders for rentals owned by the logged-in user.",
-        "Each order row renders all specified fields (rental title + buyer details + status).",
-        "Clicking \"Accept Order\" updates the existing order (no new order created) and updates the status shown in the list.",
-        "After success, UI shows \"Order Accepted Successfully\"."
+        "When logged out, no rental card shows a \"Delete\" button.",
+        "When logged in as User A, only rentals where rental.createdBy == User A’s principal show the \"Delete\" button.",
+        "Rentals created by other users do not show a \"Delete\" button."
       ]
     },
     {
-      "id": "REQ-25",
-      "text": "Create a My Orders page and route (buyer side) that lists Orders where buyer == current user and displays: Rental image, Rental title, Price, Status; render a status badge that is orange for \"Pending\" (label \"Pending\") and green for \"Accepted\" (label \"Accepted\").",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "MY ORDERS PAGE (BUYER SIDE)\n...\nIf status = \"Pending\"\nShow orange badge: Pending\n\nIf status = \"Accepted\"\nShow green badge: Accepted"
-        ]
-      },
-      "acceptanceCriteria": [
-        "My Orders page shows only orders created by the logged-in user.",
-        "Each order shows rental image, title, price, and status.",
-        "Pending orders show an orange \"Pending\" badge.",
-        "Accepted orders show a green \"Accepted\" badge."
-      ]
-    },
-    {
-      "id": "REQ-26",
-      "text": "Update application routing/navigation to include the new Owner Messages page and My Orders page without breaking existing routes (Home, Add Rental, Search Rental), and keep all user-facing labels in English.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "Use English for any user-facing text in the build request."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Routes for Owner Messages and My Orders are reachable in the app.",
-        "Existing routes (/, /add-rental, /search-rental) continue working.",
-        "Navigation labels for new pages are in English."
-      ]
-    },
-    {
-      "id": "REQ-27",
-      "text": "Add an end-to-end verification path (manual test instructions in code comments or README) demonstrating the stable flow with two accounts: Buyer creates one order (Pending) → Owner accepts (Accepted) → Buyer refreshes/opens My Orders and sees status Accepted; confirm no duplicate Orders are created.",
+      "id": "REQ-34",
+      "text": "Implement the delete workflow on Search Rental results: when the owner clicks \"Delete\", show a confirmation popup with the exact message: \"Are you sure you want to delete this product?\". Only if the user confirms, call the backend to delete the current rental. After successful deletion, the rental must disappear from the list immediately (by updating local/UI state and/or invalidating relevant React Query caches).",
       "target": "both",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-3"
         ],
         "quotes": [
-          "Test with two accounts:\nOne as Buyer\nOne as Owner\n...\nNo duplicate.\nNo overwrite.\nNo error.\nUnlimited users.\nUnlimited orders."
+          "Show confirmation popup:\n\"Are you sure you want to delete this product?\"\n\nIf Confirmed:\n→ Delete thing\nThing to delete:\nCurrent cell's Rental\n\nDo NOT delete any Orders automatically.\nDo NOT create new records.",
+          "When Owner deletes:\n→ Product is permanently removed from database.\n→ It disappears from search list immediately."
         ]
       },
       "acceptanceCriteria": [
-        "Documented steps exist to test with two identities (buyer/owner).",
-        "Following the steps results in exactly one order record whose status transitions Pending → Accepted.",
-        "Buyer sees Accepted status in My Orders after owner acceptance."
+        "Clicking \"Delete\" opens a confirmation popup showing exactly: \"Are you sure you want to delete this product?\".",
+        "If the user cancels, no backend call is made and the rental remains visible.",
+        "If the user confirms, the app calls the backend rental deletion API for that rental.",
+        "After a successful delete, the deleted rental no longer appears in the Search Rental results without requiring a manual page refresh.",
+        "Deleting a rental does not create any new records."
+      ]
+    },
+    {
+      "id": "REQ-35",
+      "text": "Enforce backend authorization for rental deletion so that only the rental owner (rental.createdBy == caller) can delete a rental; all other callers must be rejected. Ensure rental deletion does not automatically delete any Orders.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "Rental Data Type Privacy Rules:\n\nDelete:\nOnly when\nCurrent User = This Rental's createdBy\n\nNo other user can delete.\n\nDo NOT delete any Orders automatically."
+        ]
+      },
+      "acceptanceCriteria": [
+        "If a non-owner attempts to delete a rental via the canister API, the call fails with an authorization error and the rental remains stored.",
+        "If the owner deletes their rental, the rental is removed from canister storage and no longer appears in subsequent getRentals/searchRentals results.",
+        "Order records are not deleted or modified as a side effect of deleting a rental."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single-actor Motoko architecture; keep all Motoko logic in backend/main.mo.",
-    "Do not create any workflow that creates a second Order during acceptance; acceptance must only update the existing Order status.",
-    "Do not edit files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or anything under frontend/src/components/ui; compose around them instead.",
-    "Use English for all user-facing UI text and confirmation messages.",
-    "Do not introduce external databases, third-party auth providers, or additional backend services."
+    "Other users must NOT see the delete option.",
+    "Other users must NOT be able to delete any rental (backend must enforce owner-only delete).",
+    "Confirmation popup text must be exactly: \"Are you sure you want to delete this product?\".",
+    "Do NOT delete any Orders automatically when a Rental is deleted.",
+    "Do NOT create any new records as part of the delete workflow.",
+    "Use English for all user-facing text."
   ],
   "nonGoals": [
-    "Do not add additional order statuses beyond \"Pending\" and \"Accepted\".",
-    "Do not add payments, checkout, shipping calculation, notifications, chat, or messaging features.",
-    "Do not add extra workflows beyond: create order once on Buy Rental, list orders for owner/buyer, update status on Accept Order.",
-    "Do not change the existing rental search behavior or the Home page’s two-button-only content."
+    "Adding admin delete capabilities.",
+    "Adding bulk delete, undo/restore, recycle bin, or soft-delete behavior.",
+    "Automatically cleaning up, modifying, or reassigning existing Orders that reference a deleted rental.",
+    "Adding new pages or routes for deletion management."
   ],
   "imageRequirements": {
     "required": [],

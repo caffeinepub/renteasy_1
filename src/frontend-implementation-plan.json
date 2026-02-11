@@ -1,139 +1,64 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Stable Order creation + owner acceptance UI (Pending → Accepted) without duplicates",
+  "title": "Owner-only delete for rentals on Search Rental results",
   "requirements": [
     {
-      "id": "REQ-23",
-      "summary": "Add a Buy Rental UI flow that collects buyer contact details, creates exactly one Order, and shows the required success/error messages.",
+      "id": "REQ-32",
+      "summary": "Add a per-rental \"Delete\" button to each SearchRentalResultCard in the /search-rental results grid.",
       "acceptanceCriteria": [
-        "There is a visible \"Buy Rental\" action associated with a specific rental.",
-        "Buyer can enter phone/email/address and submit.",
-        "Submitting triggers exactly one create-order request.",
-        "On success, UI shows \"Request sent successfully\".",
-        "Unauthenticated users are prevented from creating an order and see an English error message."
+        "On /search-rental, every rental card includes a \"Delete\" button element in the card layout (even if conditionally hidden).",
+        "The button’s visible label text is exactly \"Delete\"."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/BuyRentalDialog.tsx",
-          "operation": "create",
-          "description": "Create a reusable Buy Rental dialog/modal that collects buyerPhone, buyerEmail, buyerAddress, validates inputs, blocks double-submits to ensure a single createOrder call per user action, and shows the success message exactly \"Request sent successfully\". Use shadcn-ui components (e.g., Dialog/Button/Input/Textarea) for consistent UI; verify the component's usage instructions before implementing."
-        },
+          "path": "frontend/src/components/SearchRentalResultCard.tsx",
+          "operation": "modify",
+          "description": "Add a \"Delete\" button to the SearchRentalResultCard layout with label text exactly \"Delete\" (visibility can be conditional per REQ-33). Keep button placement within each rental cell/card. (Authorization component is used app-wide for authentication state; verify the component's usage instructions before implementing.)"
+        }
+      ]
+    },
+    {
+      "id": "REQ-33",
+      "summary": "Hide the \"Delete\" button for non-owners and logged-out users by comparing rental.createdBy to the authenticated principal.",
+      "acceptanceCriteria": [
+        "When logged out, no rental card shows a \"Delete\" button.",
+        "When logged in as User A, only rentals where rental.createdBy == User A’s principal show the \"Delete\" button.",
+        "Rentals created by other users do not show a \"Delete\" button."
+      ],
+      "file_operations": [
         {
-          "path": "frontend/src/hooks/useCreateOrder.ts",
+          "path": "frontend/src/components/SearchRentalResultCard.tsx",
+          "operation": "modify",
+          "description": "Use the authorization component’s frontend authentication state (via the existing Internet Identity hook) to get the current user principal and compare it to rental.createdBy; render the \"Delete\" button only when they match, and hide it entirely otherwise. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-34",
+      "summary": "Implement owner delete workflow with exact confirmation text, call backend delete, and immediately remove the rental from the visible list.",
+      "acceptanceCriteria": [
+        "Clicking \"Delete\" opens a confirmation popup showing exactly: \"Are you sure you want to delete this product?\".",
+        "If the user cancels, no backend call is made and the rental remains visible.",
+        "If the user confirms, the app calls the backend rental deletion API for that rental.",
+        "After a successful delete, the deleted rental no longer appears in the Search Rental results without requiring a manual page refresh.",
+        "Deleting a rental does not create any new records."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useDeleteRental.ts",
           "operation": "create",
-          "description": "Add a React Query mutation hook that calls the backend createOrder capability once per submit, exposes pending/success/error states, and surfaces authorization failures as readable English messages (per the authorization component guidance). Verify the component's usage instructions before implementing."
+          "description": "Create a React Query mutation hook that calls the backend capability to delete the selected rental (using the existing actor.deleteRental) and, on success, invalidates relevant React Query caches (e.g., rentals lists and search results). Ensure errors (including authorization traps) are surfaced to the UI caller. (Authorization component is used app-wide for actor auth; verify the component's usage instructions before implementing.)"
         },
         {
           "path": "frontend/src/components/SearchRentalResultCard.tsx",
           "operation": "modify",
-          "description": "Add a visible \"Buy Rental\" action for each rental result that opens BuyRentalDialog with the selected rental (use rental.title as the rental identifier for the createOrder call). Ensure the UI prevents unauthenticated users from submitting and displays an English error message. Verify the component's usage instructions before implementing."
+          "description": "Wire the \"Delete\" button to a confirmation popup using the exact message text \"Are you sure you want to delete this product?\"; only on confirm, trigger the delete mutation for the current rental. On success, invoke a parent callback or local mechanism to remove the deleted rental from the rendered list immediately, and ensure React Query caches are invalidated via the mutation hook. Verify the component's usage instructions before implementing."
         },
         {
           "path": "frontend/src/pages/SearchRentalPage.tsx",
           "operation": "modify",
-          "description": "Ensure the search results rendering continues to work with the updated SearchRentalResultCard that includes the Buy Rental action (no route changes). Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-24",
-      "summary": "Create an Owner Messages page that lists owner-scoped orders and lets the owner accept an order (status update to Accepted) with the required confirmation message.",
-      "acceptanceCriteria": [
-        "Owner Messages page shows only orders for rentals owned by the logged-in user.",
-        "Each order row renders all specified fields (rental title + buyer details + status).",
-        "Clicking \"Accept Order\" updates the existing order (no new order created) and updates the status shown in the list.",
-        "After success, UI shows \"Order Accepted Successfully\"."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/OwnerMessagesPage.tsx",
-          "operation": "create",
-          "description": "Implement the Owner Messages page that fetches owner orders, displays rental title, buyer name (fallback to principal string), buyer phone/email/address, and status; includes an \"Accept Order\" button per order that calls acceptOrder for that orderId and then shows \"Order Accepted Successfully\". Guard the page for unauthenticated users (prompt to log in) and handle authorization failures gracefully per the authorization component guidance. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useOwnerOrders.ts",
-          "operation": "create",
-          "description": "Add a React Query hook to load the current owner's orders via the backend getOwnerOrders capability, with loading/error states suitable for the Owner Messages page. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useAcceptOrder.ts",
-          "operation": "create",
-          "description": "Add a React Query mutation hook that calls acceptOrder and invalidates/refetches owner orders so the updated status is shown without creating any additional UI-side records. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useUserProfile.ts",
-          "operation": "create",
-          "description": "Add an optional helper hook to fetch a buyer's profile name from getUserProfile to display a friendly name when available; fall back to the buyer principal string when no profile exists. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-25",
-      "summary": "Create a My Orders page that lists buyer-scoped orders with rental image/title/price and a Pending/Accepted status badge with required colors.",
-      "acceptanceCriteria": [
-        "My Orders page shows only orders created by the logged-in user.",
-        "Each order shows rental image, title, price, and status.",
-        "Pending orders show an orange \"Pending\" badge.",
-        "Accepted orders show a green \"Accepted\" badge."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/MyOrdersPage.tsx",
-          "operation": "create",
-          "description": "Implement the My Orders page that fetches buyer orders, renders rental image (via ExternalBlob direct URL), rental title, price, and status. Guard the page for unauthenticated users (prompt to log in) and handle authorization failures gracefully per the authorization component guidance. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useBuyerOrders.ts",
-          "operation": "create",
-          "description": "Add a React Query hook to load the current buyer's orders via the backend getBuyerOrders capability and expose data in a UI-friendly shape (including rental image/title/price/status). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/OrderStatusBadge.tsx",
-          "operation": "create",
-          "description": "Create a small presentational component that renders a status badge: orange for \"Pending\" with label \"Pending\", green for \"Accepted\" with label \"Accepted\". Use existing Tailwind tokens/classes (no new global CSS). Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-26",
-      "summary": "Add routes and navigation links for Owner Messages and My Orders without breaking existing routes and keeping labels in English.",
-      "acceptanceCriteria": [
-        "Routes for Owner Messages and My Orders are reachable in the app.",
-        "Existing routes (/, /add-rental, /search-rental) continue working.",
-        "Navigation labels for new pages are in English."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Register two new routes in the TanStack Router setup: one for Owner Messages and one for My Orders, and include them in the route tree while preserving existing routes (/, /add-rental, /search-rental). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/AppHeader.tsx",
-          "operation": "modify",
-          "description": "Add navigation items for \"Owner Messages\" and \"My Orders\" (English labels) to both desktop and mobile menus, without altering existing navigation behavior. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-27",
-      "summary": "Document a manual end-to-end verification path for two accounts confirming Pending → Accepted and no duplicates.",
-      "acceptanceCriteria": [
-        "Documented steps exist to test with two identities (buyer/owner).",
-        "Following the steps results in exactly one order record whose status transitions Pending → Accepted.",
-        "Buyer sees Accepted status in My Orders after owner acceptance."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/ORDER_FLOW_TEST.md",
-          "operation": "create",
-          "description": "Add manual test instructions for the stable flow using two identities: buyer creates one order (Pending) from Buy Rental, owner views it in Owner Messages and accepts it (Accepted), buyer refreshes My Orders and sees Accepted; include a checklist note to confirm only one order appears and that acceptance does not create a new record."
-        },
-        {
-          "path": "frontend/src/pages/OwnerMessagesPage.tsx",
-          "operation": "modify",
-          "description": "Add a brief code comment referencing frontend/ORDER_FLOW_TEST.md so the verification path is easy to find during review."
+          "description": "Ensure the deleted rental disappears immediately from the visible results without manual refresh by updating page-level UI state (e.g., maintaining a set of deleted rental identifiers/titles and filtering the displayed rentals) and passing an onDeleted callback down to SearchRentalResultCard. Also ensure the mutation’s cache invalidation causes subsequent queries to stay consistent. Verify the component's usage instructions before implementing."
         }
       ]
     }

@@ -1,5 +1,6 @@
 import { Rental } from '../backend';
 import { MapPin, Phone, Tag } from 'lucide-react';
+import { formatMonthlyPrice } from '../utils/formatPrice';
 
 interface RentalCardProps {
   rental: Rental;
@@ -7,9 +8,10 @@ interface RentalCardProps {
 
 export function RentalCard({ rental }: RentalCardProps) {
   const imageUrl = rental.image.getDirectURL();
+  const formattedPrice = formatMonthlyPrice(rental.price);
 
   return (
-    <div className="group bg-card rounded-lg border overflow-hidden hover:shadow-md transition-shadow">
+    <div className="group bg-card rounded-xl border overflow-hidden hover:shadow-lg transition-all duration-300">
       <div className="aspect-[4/3] overflow-hidden bg-muted">
         <img
           src={imageUrl}
@@ -26,10 +28,9 @@ export function RentalCard({ rental }: RentalCardProps) {
           </div>
         </div>
 
-        {rental.price !== undefined && rental.price !== null && (
-          <div className="text-xl font-bold text-primary">
-            ${Number(rental.price).toLocaleString()}
-            <span className="text-sm font-normal text-muted-foreground">/day</span>
+        {formattedPrice && (
+          <div className="text-lg font-bold text-primary">
+            {formattedPrice}
           </div>
         )}
 

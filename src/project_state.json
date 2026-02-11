@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 7,
-  "summary": "Expand RentEasy to include a stable Order acceptance flow: buyers can create an Order (status Pending) when buying a rental, owners can view incoming Orders for their rentals and accept them by updating the existing Order status to Accepted (no duplicate/new Order), and buyers can view updated statuses in My Orders; add appropriate Order privacy rules.",
+  "projectStateVersion": 11,
+  "summary": "Expand RentEasy UI/UX and pricing presentation: update Add Rental price label/currency for monthly pricing (₹) while keeping numeric storage and unchanged DB schema; modernize UI with a blue theme and add minimal looping animated headline text on the Home page above the existing two buttons.",
   "architectural_notes": [
     "Use Bubble-native database/workflows only (no external APIs/custom backend) and keep logic simple/production-safe (no experimental/complex workflows).",
     "Rental creation must always use 'Create a new thing' and never update/overwrite existing Rental records.",
@@ -10,10 +10,12 @@
     "Search results must update dynamically; when search input is empty, show all Rentals; never restrict by current user.",
     "Search filter logic: match Rentals where title OR category OR location contains the search input; sort by createdAt descending.",
     "Order acceptance must update the existing Order record only (use 'Make changes to thing'); never create a new Order during acceptance; prevent duplicates.",
-    "Orders visibility must be filtered correctly: owner views Orders where rental's createdBy = current user; buyer views Orders where buyer = current user."
+    "Orders visibility must be filtered correctly: owner views Orders where rental's createdBy = current user; buyer views Orders where buyer = current user.",
+    "Do not change the database structure for the price update; only update labels/symbols/formatting. Price must be stored as a numeric value; display formatting should be \"₹ [price] per month\" across the app.",
+    "Rental deletion: only the Rental owner (rental.createdBy == current user) may delete; non-owners must not see delete UI and must be blocked by privacy rules."
   ],
   "known_issues": [],
-  "isFixRequest": true,
+  "isFixRequest": false,
   "existing_features": [
     {
       "id": "feature-implement-user-authentication-using-internet-identity-support-sign-in-sign-out-gate-rental-creation-so-only-authenticated-users-can-add-rentals-allow-all-users-to-view-the-rental-listings-do-not-restrict-listings-to-the-creator",
@@ -140,6 +142,62 @@
       "title": "Add an end-to-end verification path (manual test instructions in code comments or README) demonstrating the stable flow with two accounts: Buyer creates one order (Pending) → Owner accepts (Accepted) → Buyer refreshes/opens My Orders and sees status Accepted; confirm no duplicate Orders are created.",
       "reqIds": [
         "REQ-27"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-add-rental-page-price-field-to-reflect-monthly-pricing-change-the-label-text-from-price-per-day-optional-to-price-per-month-optional-change-the-currency-symbol-shown-in-the-input-from-to-and-ensure-the-price-value-submitted-to-the-backend-is-numeric-only-no-currency-symbols-or-non-numeric-characters-keep-the-existing-backend-rental-price-type-and-schema-unchanged",
+      "title": "Update the Add Rental page price field to reflect monthly pricing: change the label text from \"Price per Day (optional)\" to \"Price per month (optional)\", change the currency symbol shown in the input from \"$\" to \"₹\", and ensure the price value submitted to the backend is numeric-only (no currency symbols or non-numeric characters). Keep the existing backend Rental.price type and schema unchanged.",
+      "reqIds": [
+        "REQ-28"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-price-display-formatting-across-the-app-so-that-wherever-a-rental-price-is-rendered-it-is-shown-as-price-per-month-including-listings-cards-and-buyer-order-cards-apply-this-formatting-only-when-price-is-present-keep-existing-behavior-when-price-is-null-undefined",
+      "title": "Update price display formatting across the app so that wherever a rental price is rendered it is shown as: \"₹ [price] per month\" (including listings/cards and buyer order cards). Apply this formatting only when price is present; keep existing behavior when price is null/undefined.",
+      "reqIds": [
+        "REQ-29"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-a-modern-blue-theme-across-the-ui-using-primary-color-1e88e5-a-light-blue-gradient-accent-background-and-buttons-styled-with-rounded-corners-and-soft-shadows-ensure-styling-is-consistent-across-core-pages-home-add-rental-search-rental-owner-messages-my-orders-without-adding-new-product-features",
+      "title": "Apply a modern blue theme across the UI using primary color #1E88E5, a light-blue gradient accent background, and buttons styled with rounded corners and soft shadows. Ensure styling is consistent across core pages (Home, Add Rental, Search Rental, Owner Messages, My Orders) without adding new product features.",
+      "reqIds": [
+        "REQ-30"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-home-page-layout-to-include-an-animated-headline-above-the-two-existing-buttons-with-the-text-exactly-rent-use-return-the-animation-must-be-modern-and-minimal-smooth-fade-in-slight-upward-motion-gently-looping-not-flashy-below-the-animated-text-render-the-existing-add-rental-and-search-rental-buttons",
+      "title": "Update the Home page layout to include an animated headline above the two existing buttons, with the text exactly:\n\"Rent.\"\n\"Use\"\n\"Return.\"\nThe animation must be modern and minimal: smooth fade-in, slight upward motion, gently looping, not flashy. Below the animated text, render the existing \"Add Rental\" and \"Search Rental\" buttons.",
+      "reqIds": [
+        "REQ-31"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-per-rental-delete-button-to-each-rental-cell-on-the-search-rental-page-results-grid-the-searchrentalresultcard-component-the-button-label-must-be-exactly-delete",
+      "title": "Add a per-rental \"Delete\" button to each rental cell on the Search Rental page results grid (the SearchRentalResultCard component). The button label must be exactly: \"Delete\".",
+      "reqIds": [
+        "REQ-32"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-show-the-delete-button-only-when-the-current-rental-s-createdby-matches-the-currently-authenticated-user-principal-otherwise-hide-the-button-entirely-non-owners-must-not-see-any-delete-affordance",
+      "title": "Show the \"Delete\" button ONLY when the current rental’s createdBy matches the currently authenticated user principal; otherwise hide the button entirely (non-owners must not see any delete affordance).",
+      "reqIds": [
+        "REQ-33"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-the-delete-workflow-on-search-rental-results-when-the-owner-clicks-delete-show-a-confirmation-popup-with-the-exact-message-are-you-sure-you-want-to-delete-this-product-only-if-the-user-confirms-call-the-backend-to-delete-the-current-rental-after-successful-deletion-the-rental-must-disappear-from-the-list-immediately-by-updating-local-ui-state-and-or-invalidating-relevant-react-query-caches",
+      "title": "Implement the delete workflow on Search Rental results: when the owner clicks \"Delete\", show a confirmation popup with the exact message: \"Are you sure you want to delete this product?\". Only if the user confirms, call the backend to delete the current rental. After successful deletion, the rental must disappear from the list immediately (by updating local/UI state and/or invalidating relevant React Query caches).",
+      "reqIds": [
+        "REQ-34"
       ],
       "version": 1
     }
@@ -314,6 +372,32 @@
       "summary": "Enforce Order privacy/authorization rules in backend APIs: View allowed only if (buyer == caller) OR (rental.createdBy == caller); Create allowed only for authenticated users; Edit and Delete allowed only for rental.createdBy.",
       "reqIds": [
         "REQ-22"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-32",
+      "summary": "Update pricing UI/formatting: on Add Rental change label from \"Price per day\" to \"Price per month\" (no DB structure change); change currency symbol from \"$\" to \"₹\"; ensure price input stores numeric value only; display price everywhere as: \"₹ [price] per month\".",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-33",
+      "summary": "Modernize UI with blue theme: primary color #1E88E5; light blue gradient background accent; rounded buttons with soft shadows; keep UI clean. On Home page add looping minimal animated text above buttons: \"Rent.\\nUse\\nReturn.\" with smooth fade-in + slight upward motion.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-34",
+      "summary": "Add Owner Delete functionality for Rentals: on Search Rental page show a per-cell 'Delete' button visible only when current cell Rental.createdBy = Current User; on click show confirmation popup then delete the current Rental; update Rental privacy rules so only Rental.createdBy can delete; do not auto-delete Orders and do not create new records; deleted Rental should disappear from the list immediately.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-38",
+      "summary": "Enforce backend authorization for rental deletion so that only the rental owner (rental.createdBy == caller) can delete a rental; all other callers must be rejected. Ensure rental deletion does not automatically delete any Orders.",
+      "reqIds": [
+        "REQ-35"
       ],
       "status": "pending"
     }

@@ -204,9 +204,12 @@ import MixinAuthorization "authorization/MixinAuthorization";
         Runtime.trap("Rental not found");
       };
       case (?rental) {
+        // Authorization check: Only the rental owner can delete
         if (rental.createdBy != caller) {
           Runtime.trap("Unauthorized: Only the owner can delete this rental");
         };
+        
+        // Delete the rental (orders are NOT automatically deleted)
         rentals.remove(title);
       };
     };
@@ -227,7 +230,6 @@ import MixinAuthorization "authorization/MixinAuthorization";
   stable var nextOrderId : Nat = 1;
   let orders = Map.empty<Nat, OrderRecord>();
 
-  // Create Order - Only authenticated users
   public shared ({ caller }) func createOrder(
     rentalTitle : Text,
     buyerPhone : Text,
@@ -265,7 +267,6 @@ import MixinAuthorization "authorization/MixinAuthorization";
     };
   };
 
-  // Get single order - Authorization: buyer or rental owner only
   public query ({ caller }) func getOrder(orderId : Nat) : async OrderRecord {
     switch (orders.get(orderId)) {
       case (null) {
@@ -295,8 +296,6 @@ import MixinAuthorization "authorization/MixinAuthorization";
     };
   };
 
-  // List orders for owner (Owner Messages page)
-  // Authorization: Returns only orders for rentals owned by caller
   public query ({ caller }) func getOwnerOrders() : async [(Nat, OrderRecord, Text, Principal, Text, Text, Text)] {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only authenticated users can view owner orders");
@@ -329,8 +328,6 @@ import MixinAuthorization "authorization/MixinAuthorization";
     result.toArray();
   };
 
-  // List orders for buyer (My Orders page)
-  // Authorization: Returns only orders where buyer == caller
   public query ({ caller }) func getBuyerOrders() : async [(Nat, OrderRecord, Storage.ExternalBlob, Text, ?Nat)] {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only authenticated users can view buyer orders");
@@ -361,7 +358,6 @@ import MixinAuthorization "authorization/MixinAuthorization";
     result.toArray();
   };
 
-  // Accept Order - Authorization: Only rental owner can accept
   public shared ({ caller }) func acceptOrder(orderId : Nat) : async () {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only authenticated users can accept orders");
@@ -400,7 +396,6 @@ import MixinAuthorization "authorization/MixinAuthorization";
     };
   };
 
-  // Delete Order - Authorization: Only rental owner can delete
   public shared ({ caller }) func deleteOrder(orderId : Nat) : async () {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only authenticated users can delete orders");
@@ -461,7 +456,14 @@ import MixinAuthorization "authorization/MixinAuthorization";
      - Owner cannot view orders for other owners' rentals
      - Unauthenticated users cannot create orders
   
+  6. Rental Deletion Authorization Tests:
+     - Owner can delete their own rental (authorized)
+     - Non-owner cannot delete someone else's rental (unauthorized)
+     - Deleting a rental does NOT delete associated orders
+     - Orders remain accessible after rental deletion
+  
   Expected Result: Exactly ONE order record throughout the entire flow,
   with status transitioning from "Pending" to "Accepted".
+  Rental deletion is restricted to owner only and does not cascade to orders.
   */
 });

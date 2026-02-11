@@ -110,7 +110,7 @@ function OrderCard({ order, onAccept, isAccepting }: OrderCardProps) {
   const { buyerName } = useUserProfile(order.buyerPrincipal);
 
   return (
-    <Card>
+    <Card className="rounded-xl shadow-md">
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="space-y-1">
@@ -124,6 +124,7 @@ function OrderCard({ order, onAccept, isAccepting }: OrderCardProps) {
               onClick={() => onAccept(order.orderId)}
               disabled={isAccepting}
               size="sm"
+              className="rounded-lg shadow-sm"
             >
               {isAccepting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               <CheckCircle className="w-4 h-4 mr-2" />
@@ -132,23 +133,23 @@ function OrderCard({ order, onAccept, isAccepting }: OrderCardProps) {
           )}
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="grid gap-3 text-sm">
+      <CardContent className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <span className="font-medium text-muted-foreground">Buyer:</span>{' '}
-            <span>{buyerName || order.buyerPrincipal}</span>
+            <p className="text-sm text-muted-foreground mb-1">Buyer Name</p>
+            <p className="font-medium">{buyerName || 'Loading...'}</p>
           </div>
           <div>
-            <span className="font-medium text-muted-foreground">Phone:</span>{' '}
-            <span>{order.buyerPhone}</span>
+            <p className="text-sm text-muted-foreground mb-1">Phone</p>
+            <p className="font-medium">{order.buyerPhone}</p>
           </div>
           <div>
-            <span className="font-medium text-muted-foreground">Email:</span>{' '}
-            <span>{order.buyerEmail}</span>
+            <p className="text-sm text-muted-foreground mb-1">Email</p>
+            <p className="font-medium break-all">{order.buyerEmail}</p>
           </div>
           <div>
-            <span className="font-medium text-muted-foreground">Address:</span>{' '}
-            <span>{order.buyerAddress}</span>
+            <p className="text-sm text-muted-foreground mb-1">Address</p>
+            <p className="font-medium">{order.buyerAddress}</p>
           </div>
         </div>
       </CardContent>

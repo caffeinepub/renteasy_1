@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useSearchRentals } from '../hooks/useSearchRentals';
 import { useRentals } from '../hooks/useRentals';
 import { SearchRentalResultCard } from '../components/SearchRentalResultCard';
@@ -7,13 +7,23 @@ import { Input } from '@/components/ui/input';
 
 export default function SearchRentalPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [deletedRentals, setDeletedRentals] = useState<Set<string>>(new Set());
   
   // Use search hook when there's a query, otherwise use all rentals
   const { rentals: searchResults, isLoading: isSearching } = useSearchRentals(searchQuery);
   const { rentals: allRentals, isLoading: isLoadingAll } = useRentals();
   
-  const rentals = searchQuery ? searchResults : allRentals;
+  const baseRentals = searchQuery ? searchResults : allRentals;
   const isLoading = searchQuery ? isSearching : isLoadingAll;
+
+  // Filter out deleted rentals for immediate UI update
+  const rentals = useMemo(() => {
+    return baseRentals.filter(rental => !deletedRentals.has(rental.title));
+  }, [baseRentals, deletedRentals]);
+
+  const handleRentalDeleted = (title: string) => {
+    setDeletedRentals(prev => new Set(prev).add(title));
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -33,7 +43,7 @@ export default function SearchRentalPage() {
               placeholder="Search by title, category, or location"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-6 text-base"
+              className="w-full pl-10 pr-4 py-6 text-base rounded-xl shadow-sm focus:shadow-md transition-shadow"
             />
           </div>
         </div>
@@ -65,7 +75,11 @@ export default function SearchRentalPage() {
         {!isLoading && rentals.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {rentals.map((rental, index) => (
-              <SearchRentalResultCard key={`${rental.title}-${index}`} rental={rental} />
+              <SearchRentalResultCard 
+                key={`${rental.title}-${index}`} 
+                rental={rental}
+                onDeleted={handleRentalDeleted}
+              />
             ))}
           </div>
         )}
