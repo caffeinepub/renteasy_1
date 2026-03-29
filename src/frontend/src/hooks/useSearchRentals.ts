@@ -1,12 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
-import { useActor } from './useActor';
-import { Rental } from '../backend';
+import { useQuery } from "@tanstack/react-query";
+import type { Rental } from "../backend";
+import { useActor } from "./useActor";
 
 export function useSearchRentals(searchTerm: string) {
   const { actor, isFetching: actorFetching } = useActor();
 
   const query = useQuery<Rental[]>({
-    queryKey: ['searchRentals', searchTerm],
+    queryKey: ["searchRentals", searchTerm],
     queryFn: async () => {
       if (!actor) return [];
       const [, rentals] = await actor.searchRentals(searchTerm);

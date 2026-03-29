@@ -124,6 +124,20 @@ export interface Rental {
     price?: bigint;
     location: string;
 }
+export interface Review {
+    rental: string;
+    reviewer: Principal;
+    rating: bigint;
+    reviewText: string;
+    createdAt: Time;
+}
+export interface Notification {
+    user: Principal;
+    message: string;
+    relatedOrder: bigint;
+    isRead: boolean;
+    createdAt: Time;
+}
 export enum UserRole {
     admin = "admin",
     user = "user",
@@ -141,17 +155,23 @@ export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     createOrder(rentalTitle: string, buyerPhone: string, buyerEmail: string, buyerAddress: string): Promise<bigint>;
     createRental(title: string, category: string, description: string, price: bigint | null, location: string, phone: string, image: ExternalBlob): Promise<string>;
+    createReview(rentalTitle: string, rating: bigint, reviewText: string): Promise<bigint>;
     deleteOrder(orderId: bigint): Promise<void>;
     deleteRental(title: string): Promise<void>;
     getBuyerOrders(): Promise<Array<[bigint, OrderRecord, ExternalBlob, string, bigint | null]>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
+    getMyNotifications(): Promise<Array<[bigint, Notification]>>;
     getOrder(orderId: bigint): Promise<OrderRecord>;
     getOwnerOrders(): Promise<Array<[bigint, OrderRecord, string, Principal, string, string, string]>>;
     getRental(title: string): Promise<Rental>;
     getRentals(page: bigint, pageSize: bigint): Promise<Array<Rental>>;
+    getReviewsForRental(rentalTitle: string): Promise<Array<[bigint, Review, string]>>;
+    getUnreadNotificationCount(): Promise<bigint>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
+    hasUserReviewedRental(rentalTitle: string): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
+    markNotificationRead(notifId: bigint): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     searchRentals(searchTerm: string): Promise<[bigint, Array<Rental>]>;
     updateRental(title: string, category: string, description: string, price: bigint | null, location: string, phone: string, image: ExternalBlob): Promise<Rental>;
@@ -313,6 +333,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async createReview(arg0: string, arg1: bigint, arg2: string): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.createReview(arg0, arg1, arg2);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.createReview(arg0, arg1, arg2);
+            return result;
+        }
+    }
     async deleteOrder(arg0: bigint): Promise<void> {
         if (this.processError) {
             try {
@@ -383,6 +417,20 @@ export class Backend implements backendInterface {
             return from_candid_UserRole_n16(this._uploadFile, this._downloadFile, result);
         }
     }
+    async getMyNotifications(): Promise<Array<[bigint, Notification]>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getMyNotifications();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getMyNotifications();
+            return result;
+        }
+    }
     async getOrder(arg0: bigint): Promise<OrderRecord> {
         if (this.processError) {
             try {
@@ -439,6 +487,34 @@ export class Backend implements backendInterface {
             return from_candid_vec_n20(this._uploadFile, this._downloadFile, result);
         }
     }
+    async getReviewsForRental(arg0: string): Promise<Array<[bigint, Review, string]>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getReviewsForRental(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getReviewsForRental(arg0);
+            return result;
+        }
+    }
+    async getUnreadNotificationCount(): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getUnreadNotificationCount();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getUnreadNotificationCount();
+            return result;
+        }
+    }
     async getUserProfile(arg0: Principal): Promise<UserProfile | null> {
         if (this.processError) {
             try {
@@ -453,6 +529,20 @@ export class Backend implements backendInterface {
             return from_candid_opt_n15(this._uploadFile, this._downloadFile, result);
         }
     }
+    async hasUserReviewedRental(arg0: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.hasUserReviewedRental(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.hasUserReviewedRental(arg0);
+            return result;
+        }
+    }
     async isCallerAdmin(): Promise<boolean> {
         if (this.processError) {
             try {
@@ -464,6 +554,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.isCallerAdmin();
+            return result;
+        }
+    }
+    async markNotificationRead(arg0: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.markNotificationRead(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.markNotificationRead(arg0);
             return result;
         }
     }

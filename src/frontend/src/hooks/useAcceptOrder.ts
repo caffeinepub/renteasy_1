@@ -1,5 +1,5 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useActor } from './useActor';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useActor } from "./useActor";
 
 export function useAcceptOrder() {
   const { actor } = useActor();
@@ -8,17 +8,17 @@ export function useAcceptOrder() {
   return useMutation({
     mutationFn: async (orderId: bigint) => {
       if (!actor) {
-        throw new Error('Actor not initialized');
+        throw new Error("Actor not initialized");
       }
 
       await actor.acceptOrder(orderId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ownerOrders'] });
-      queryClient.invalidateQueries({ queryKey: ['buyerOrders'] });
+      queryClient.invalidateQueries({ queryKey: ["ownerOrders"] });
+      queryClient.invalidateQueries({ queryKey: ["buyerOrders"] });
     },
     onError: (error: any) => {
-      console.error('Failed to accept order:', error);
+      console.error("Failed to accept order:", error);
     },
   });
 }

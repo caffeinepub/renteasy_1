@@ -3,67 +3,67 @@
 @tailwind utilities;
 
 @layer base {
-    :root {
-        --radius: 0.75rem;
-        /* Modern blue theme for RentEasy */
-        --background: 0.99 0.002 220;
-        --foreground: 0.20 0.015 220;
-        --card: 1 0 0;
-        --card-foreground: 0.20 0.015 220;
-        --popover: 1 0 0;
-        --popover-foreground: 0.20 0.015 220;
-        --primary: 0.58 0.18 230;
-        --primary-foreground: 0.99 0.002 220;
-        --secondary: 0.94 0.01 220;
-        --secondary-foreground: 0.20 0.015 220;
-        --muted: 0.96 0.005 220;
-        --muted-foreground: 0.50 0.010 220;
-        --accent: 0.90 0.02 210;
-        --accent-foreground: 0.20 0.015 220;
-        --destructive: 0.55 0.22 25;
-        --destructive-foreground: 0.99 0.002 220;
-        --border: 0.90 0.008 220;
-        --input: 0.90 0.008 220;
-        --ring: 0.58 0.18 230;
-        --chart-1: 0.65 0.18 230;
-        --chart-2: 0.60 0.15 200;
-        --chart-3: 0.55 0.12 180;
-        --chart-4: 0.70 0.16 250;
-        --chart-5: 0.58 0.14 210;
-    }
+  :root {
+    --radius: 0.75rem;
+    /* Modern blue theme for RentEasy */
+    --background: 0.99 0.002 220;
+    --foreground: 0.2 0.015 220;
+    --card: 1 0 0;
+    --card-foreground: 0.2 0.015 220;
+    --popover: 1 0 0;
+    --popover-foreground: 0.2 0.015 220;
+    --primary: 0.58 0.18 230;
+    --primary-foreground: 0.99 0.002 220;
+    --secondary: 0.94 0.01 220;
+    --secondary-foreground: 0.2 0.015 220;
+    --muted: 0.96 0.005 220;
+    --muted-foreground: 0.5 0.01 220;
+    --accent: 0.9 0.02 210;
+    --accent-foreground: 0.2 0.015 220;
+    --destructive: 0.55 0.22 25;
+    --destructive-foreground: 0.99 0.002 220;
+    --border: 0.9 0.008 220;
+    --input: 0.9 0.008 220;
+    --ring: 0.58 0.18 230;
+    --chart-1: 0.65 0.18 230;
+    --chart-2: 0.6 0.15 200;
+    --chart-3: 0.55 0.12 180;
+    --chart-4: 0.7 0.16 250;
+    --chart-5: 0.58 0.14 210;
+  }
 
-    .dark {
-        --background: 0.15 0.015 220;
-        --foreground: 0.95 0.005 220;
-        --card: 0.18 0.018 220;
-        --card-foreground: 0.95 0.005 220;
-        --popover: 0.16 0.018 220;
-        --popover-foreground: 0.95 0.005 220;
-        --primary: 0.65 0.20 230;
-        --primary-foreground: 0.15 0.015 220;
-        --secondary: 0.25 0.020 220;
-        --secondary-foreground: 0.95 0.005 220;
-        --muted: 0.25 0.020 220;
-        --muted-foreground: 0.65 0.010 220;
-        --accent: 0.30 0.025 210;
-        --accent-foreground: 0.95 0.005 220;
-        --destructive: 0.60 0.20 25;
-        --destructive-foreground: 0.95 0.005 220;
-        --border: 0.28 0.020 220;
-        --input: 0.28 0.020 220;
-        --ring: 0.65 0.20 230;
-        --chart-1: 0.60 0.18 230;
-        --chart-2: 0.65 0.16 200;
-        --chart-3: 0.70 0.14 180;
-        --chart-4: 0.58 0.15 250;
-        --chart-5: 0.62 0.16 210;
-    }
+  .dark {
+    --background: 0.15 0.015 220;
+    --foreground: 0.95 0.005 220;
+    --card: 0.18 0.018 220;
+    --card-foreground: 0.95 0.005 220;
+    --popover: 0.16 0.018 220;
+    --popover-foreground: 0.95 0.005 220;
+    --primary: 0.65 0.2 230;
+    --primary-foreground: 0.15 0.015 220;
+    --secondary: 0.25 0.02 220;
+    --secondary-foreground: 0.95 0.005 220;
+    --muted: 0.25 0.02 220;
+    --muted-foreground: 0.65 0.01 220;
+    --accent: 0.3 0.025 210;
+    --accent-foreground: 0.95 0.005 220;
+    --destructive: 0.6 0.2 25;
+    --destructive-foreground: 0.95 0.005 220;
+    --border: 0.28 0.02 220;
+    --input: 0.28 0.02 220;
+    --ring: 0.65 0.2 230;
+    --chart-1: 0.6 0.18 230;
+    --chart-2: 0.65 0.16 200;
+    --chart-3: 0.7 0.14 180;
+    --chart-4: 0.58 0.15 250;
+    --chart-5: 0.62 0.16 210;
+  }
 
-    * {
-        @apply border-border;
-    }
-    body {
-        @apply bg-background text-foreground;
-        font-feature-settings: "rlig" 1, "calt" 1;
-    }
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
 }

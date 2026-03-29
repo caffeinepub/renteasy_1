@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
-import { ExternalBlob } from '../backend';
-import { Upload, X, Loader2 } from 'lucide-react';
+import { Loader2, Upload, X } from "lucide-react";
+import { useRef, useState } from "react";
+import { ExternalBlob } from "../backend";
 
 interface ImageUploaderProps {
   onImageChange: (blob: ExternalBlob | null) => void;
@@ -13,19 +13,21 @@ export function ImageUploader({ onImageChange, error }: ImageUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file");
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('Image size must be less than 5MB');
+      alert("Image size must be less than 5MB");
       return;
     }
 
@@ -38,9 +40,11 @@ export function ImageUploader({ onImageChange, error }: ImageUploaderProps) {
       const bytes = new Uint8Array(arrayBuffer);
 
       // Create ExternalBlob with progress tracking
-      const blob = ExternalBlob.fromBytes(bytes).withUploadProgress((percentage) => {
-        setUploadProgress(percentage);
-      });
+      const blob = ExternalBlob.fromBytes(bytes).withUploadProgress(
+        (percentage) => {
+          setUploadProgress(percentage);
+        },
+      );
 
       // Create preview URL
       const previewUrl = URL.createObjectURL(file);
@@ -48,8 +52,8 @@ export function ImageUploader({ onImageChange, error }: ImageUploaderProps) {
 
       onImageChange(blob);
     } catch (error) {
-      console.error('Error uploading image:', error);
-      alert('Failed to upload image. Please try again.');
+      console.error("Error uploading image:", error);
+      alert("Failed to upload image. Please try again.");
       onImageChange(null);
     } finally {
       setIsUploading(false);
@@ -61,7 +65,7 @@ export function ImageUploader({ onImageChange, error }: ImageUploaderProps) {
     setUploadProgress(0);
     onImageChange(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -81,21 +85,30 @@ export function ImageUploader({ onImageChange, error }: ImageUploaderProps) {
           htmlFor="image-upload"
           className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
             error
-              ? 'border-destructive bg-destructive/5 hover:bg-destructive/10'
-              : 'border-border bg-muted/30 hover:bg-muted/50'
+              ? "border-destructive bg-destructive/5 hover:bg-destructive/10"
+              : "border-border bg-muted/30 hover:bg-muted/50"
           }`}
         >
           <div className="flex flex-col items-center justify-center pt-5 pb-6">
-            <Upload className={`w-10 h-10 mb-3 ${error ? 'text-destructive' : 'text-muted-foreground'}`} />
+            <Upload
+              className={`w-10 h-10 mb-3 ${error ? "text-destructive" : "text-muted-foreground"}`}
+            />
             <p className="mb-2 text-sm text-muted-foreground">
-              <span className="font-semibold">Click to upload</span> or drag and drop
+              <span className="font-semibold">Click to upload</span> or drag and
+              drop
             </p>
-            <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 5MB</p>
+            <p className="text-xs text-muted-foreground">
+              PNG, JPG, GIF up to 5MB
+            </p>
           </div>
         </label>
       ) : (
         <div className="relative w-full h-48 rounded-lg overflow-hidden border bg-muted/30">
-          <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+          <img
+            src={preview}
+            alt="Preview"
+            className="w-full h-full object-cover"
+          />
           <button
             type="button"
             onClick={handleRemove}

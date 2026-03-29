@@ -20,6 +20,13 @@ export interface OrderRecord {
   'buyerPhone' : string,
   'buyer' : Principal,
 }
+export interface Notification {
+  'user' : Principal,
+  'message' : string,
+  'relatedOrder' : bigint,
+  'isRead' : boolean,
+  'createdAt' : Time,
+}
 export interface Rental {
   'title' : string,
   'createdAt' : Time,
@@ -30,6 +37,13 @@ export interface Rental {
   'phone' : string,
   'price' : [] | [bigint],
   'location' : string,
+}
+export interface Review {
+  'rental' : string,
+  'reviewer' : Principal,
+  'rating' : bigint,
+  'reviewText' : string,
+  'createdAt' : Time,
 }
 export type Time = bigint;
 export interface UserProfile { 'name' : string }
@@ -71,6 +85,7 @@ export interface _SERVICE {
     [string, string, string, [] | [bigint], string, string, ExternalBlob],
     string
   >,
+  'createReview' : ActorMethod<[string, bigint, string], bigint>,
   'deleteOrder' : ActorMethod<[bigint], undefined>,
   'deleteRental' : ActorMethod<[string], undefined>,
   'getBuyerOrders' : ActorMethod<
@@ -79,6 +94,7 @@ export interface _SERVICE {
   >,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getMyNotifications' : ActorMethod<[], Array<[bigint, Notification]>>,
   'getOrder' : ActorMethod<[bigint], OrderRecord>,
   'getOwnerOrders' : ActorMethod<
     [],
@@ -86,8 +102,12 @@ export interface _SERVICE {
   >,
   'getRental' : ActorMethod<[string], Rental>,
   'getRentals' : ActorMethod<[bigint, bigint], Array<Rental>>,
+  'getReviewsForRental' : ActorMethod<[string], Array<[bigint, Review, string]>>,
+  'getUnreadNotificationCount' : ActorMethod<[], bigint>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'hasUserReviewedRental' : ActorMethod<[string], boolean>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'markNotificationRead' : ActorMethod<[bigint], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'searchRentals' : ActorMethod<[string], [bigint, Array<Rental>]>,
   'updateRental' : ActorMethod<

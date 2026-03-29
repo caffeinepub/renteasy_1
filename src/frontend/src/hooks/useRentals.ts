@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
-import { useActor } from './useActor';
-import { Rental } from '../backend';
-import { useState } from 'react';
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import type { Rental } from "../backend";
+import { useActor } from "./useActor";
 
 const PAGE_SIZE = 12;
 
@@ -10,7 +10,7 @@ export function useRentals() {
   const [page, setPage] = useState(0);
 
   const query = useQuery<Rental[]>({
-    queryKey: ['rentals', page],
+    queryKey: ["rentals", page],
     queryFn: async () => {
       if (!actor) return [];
       return await actor.getRentals(BigInt(page), BigInt(PAGE_SIZE));
@@ -26,14 +26,20 @@ export function useRentals() {
   if (query.data && query.isSuccess) {
     if (page === 0) {
       // Reset on first page
-      if (allRentals.length !== query.data.length || allRentals[0]?.title !== query.data[0]?.title) {
+      if (
+        allRentals.length !== query.data.length ||
+        allRentals[0]?.title !== query.data[0]?.title
+      ) {
         setAllRentals(query.data);
       }
     } else {
       // Append new page
       const lastRental = allRentals[allRentals.length - 1];
       const firstNewRental = query.data[0];
-      if (query.data.length > 0 && lastRental?.title !== firstNewRental?.title) {
+      if (
+        query.data.length > 0 &&
+        lastRental?.title !== firstNewRental?.title
+      ) {
         setAllRentals((prev) => [...prev, ...query.data]);
       }
     }

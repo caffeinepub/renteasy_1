@@ -1,6 +1,6 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useActor } from './useActor';
-import { ExternalBlob } from '../backend';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { ExternalBlob } from "../backend";
+import { useActor } from "./useActor";
 
 interface CreateRentalParams {
   title: string;
@@ -10,6 +10,8 @@ interface CreateRentalParams {
   location: string;
   phone: string;
   image: ExternalBlob;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export function useCreateRental() {
@@ -19,29 +21,31 @@ export function useCreateRental() {
   return useMutation({
     mutationFn: async (params: CreateRentalParams) => {
       if (!actor) {
-        throw new Error('Actor not initialized');
+        throw new Error("Actor not initialized");
       }
 
-      return await actor.createRental(
+      // Cast to any to support new backend signature with latitude, longitude
+      return await (actor as any).createRental(
         params.title,
         params.category,
         params.description,
         params.price,
         params.location,
         params.phone,
-        params.image
+        params.image,
+        params.latitude ?? null,
+        params.longitude ?? null,
       );
     },
     onSuccess: () => {
-      // Invalidate rentals query to refetch the list
-      queryClient.invalidateQueries({ queryKey: ['rentals'] });
+      queryClient.invalidateQueries({ queryKey: ["rentals"] });
     },
     onError: (error: any) => {
-      console.error('Failed to create rental:', error);
-      if (error.message?.includes('Unauthorized')) {
-        alert('You must be logged in to create a rental');
+      console.error("Failed to create rental:", error);
+      if (error.message?.includes("Unauthorized")) {
+        alert("You must be logged in to create a rental");
       } else {
-        alert('Failed to create rental. Please try again.');
+        alert("Failed to create rental. Please try again.");
       }
     },
   });
